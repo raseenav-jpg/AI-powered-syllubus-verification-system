@@ -1,36 +1,46 @@
 def calculate_similarity(results):
-    """
-    Calculate similarity score based on the number of passed and failed checks.
-    A result starting with '✓' is considered a pass.
-    A result starting with '✗' is considered a fail.
-    """
 
-    total_checks = len(results)
+    passed = 0
+    failed = 0
 
-    if total_checks == 0:
-        return {
-            "passed": 0,
-            "failed": 0,
-            "score": 0.0,
-            "decision": "No Checks Performed"
-        }
+    # FULL SYLLABUS
+    if results and isinstance(results[0], dict):
 
-    passed = sum(1 for r in results if r.startswith("✓"))
-    failed = total_checks - passed
+        for course in results:
 
-    score = (passed / total_checks) * 100
+            for line in course["validation_results"]:
 
-    # Final decision rules
-    if score >= 95:
-        decision = "Approved"
-    elif score >= 80:
-        decision = "Minor Corrections Needed"
+                if line.startswith("✓"):
+                    passed += 1
+                else:
+                    failed += 1
+
+    # SINGLE COURSE
     else:
-        decision = "Major Corrections Needed"
+
+        for line in results:
+
+            if line.startswith("✓"):
+                passed += 1
+            else:
+                failed += 1
+
+    total = passed + failed
+
+    score = (
+        round((passed / total) * 100, 2)
+        if total > 0 else 0
+    )
+
+    decision = (
+        "PASS"
+        if score >= 70
+        else "REVIEW REQUIRED"
+    )
 
     return {
         "passed": passed,
         "failed": failed,
-        "score": round(score, 2),
+        "score": score,
         "decision": decision
     }
