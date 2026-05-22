@@ -62,7 +62,7 @@ def classify_course(course_code, info):
             course_type.upper().strip()
         )
 
-       # -------------------------------------------------
+         # -------------------------------------------------
     # MAJOR
     # -------------------------------------------------
 
@@ -71,11 +71,14 @@ def classify_course(course_code, info):
         or prefix in ["CJ", "DSC"]
     ):
 
-        # Detect practical component
-        if "practical" in info.get(
-            "course_title",
-            ""
-        ).lower():
+        course_title = (
+            info.get("course_title")
+            or ""
+        )
+
+        if "practical" in (
+            course_title.lower()
+        ):
 
             return "Major Theory+Practical"
 

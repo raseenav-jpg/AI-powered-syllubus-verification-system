@@ -1,14 +1,21 @@
 from rules import ACADEMIC_RULES
-from syllabus_reader import extract_syllabus_info
 
 
-def validate_syllabus(file_path, rule_name,info):
+def validate_syllabus(
+    course_text,
+    rule_name,
+    info
+):
 
-    info = extract_syllabus_info(file_path)
-
+    # Use already extracted info
     rule = ACADEMIC_RULES[rule_name]
 
     results = []
+
+    # -------------------------------------------------
+    # COURSE DETAILS
+    # -------------------------------------------------
+
     results.append(
         f"✓ Course: "
         f"{info.get('course_code')} - "
@@ -16,49 +23,70 @@ def validate_syllabus(file_path, rule_name,info):
     )
 
     results.append(
-    f"✓ Detected Type: {rule_name}"
+        f"✓ Detected Type: {rule_name}"
     )
 
     # -------------------------------------------------
     # SECTIONS
     # -------------------------------------------------
+
     checks = [
 
-        ("Course Summary",
-         info["has_course_summary"]),
+        (
+            "Course Summary",
+            info["has_course_summary"]
+        ),
 
-        ("Course Outcomes",
-         info["has_course_outcomes"]),
+        (
+            "Course Outcomes",
+            info["has_course_outcomes"]
+        ),
 
-        ("Detailed Syllabus",
-         info["has_detailed_syllabus"]),
+        (
+            "Detailed Syllabus",
+            info["has_detailed_syllabus"]
+        ),
 
-        ("References",
-         info["has_references"])
+        (
+            "References",
+            info["has_references"]
+        )
     ]
 
     for name, status in checks:
 
         if status:
-            results.append(f"✓ {name} found")
+
+            results.append(
+                f"✓ {name} found"
+            )
+
         else:
-            results.append(f"✗ {name} missing")
+
+            results.append(
+                f"✗ {name} missing"
+            )
 
     # -------------------------------------------------
     # COURSE OUTCOMES
     # -------------------------------------------------
+
     co_count = info["co_count"]
 
     if co_count > 0:
+
         results.append(
-            f"✓ Course Outcomes detected ({co_count})"
+            f"✓ Course Outcomes detected "
+            f"({co_count})"
         )
+
     else:
+
         results.append(
             "✗ Course Outcomes missing"
         )
 
-       # -------------------------------------------------
+    # -------------------------------------------------
     # RULE-BASED VALUES
     # -------------------------------------------------
 
@@ -71,4 +99,7 @@ def validate_syllabus(file_path, rule_name,info):
         f"✓ Hours/week as per rule: "
         f"{rule['hours_per_week']}"
     )
+    #return result
+
+
     return results

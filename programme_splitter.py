@@ -3,28 +3,64 @@ import re
 
 def split_courses(text):
 
-    pattern = r'(BCA\d[A-Z]{2,6}\d{2,3})'
-
-    matches = list(
-        re.finditer(pattern, text)
-    )
-
     courses = []
 
-    for i, match in enumerate(matches):
+    # Split using Course Code pattern
+    pattern = r'(Course\s*Code\s*[A-Z0-9]+)'
 
-        start = match.start()
+    parts = re.split(
+        pattern,
+        text,
+        flags=re.IGNORECASE
+    )
 
-        if i + 1 < len(matches):
-            end = matches[i + 1].start()
+    # Merge heading + content
+    for i in range(1, len(parts), 2):
+
+        heading = parts[i]
+
+        content = ""
+
+        if i + 1 < len(parts):
+
+            content = parts[i + 1]
+
+        full_text = (
+            heading + "\n" + content
+        )
+
+        # Extract course code
+        match = re.search(
+
+            r'Course\s*Code\s*([A-Z0-9]+)',
+
+            heading,
+
+            re.IGNORECASE
+        )
+
+        if match:
+
+            course_code = (
+                match.group(1)
+            )
+
         else:
-            end = len(text)
 
-        course_text = text[start:end]
+            course_code = "UNKNOWN"
 
         courses.append({
-            "course_code": match.group(1),
-            "text": course_text
+
+            "course_code":
+            course_code,
+
+            "text":
+            full_text
         })
+
+    print(
+        "\nTOTAL COURSES FOUND:",
+        len(courses)
+    )
 
     return courses

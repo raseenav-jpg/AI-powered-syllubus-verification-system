@@ -1,5 +1,6 @@
 from syllabus_reader import (
     extract_syllabus_info,
+    extract_syllabus_info_from_text,
     extract_text
 )
 
@@ -64,7 +65,7 @@ def auto_validate(file_path):
             }
 
         results = validate_syllabus(
-            file_path,
+            text,
             predicted_rule,info
         )
 
@@ -80,65 +81,137 @@ def auto_validate(file_path):
             results
         }
 
-    # =================================================
+        # =================================================
     # FULL SYLLABUS
     # =================================================
+
     else:
 
         courses = split_courses(text)
 
         all_results = []
 
+        print(
+            "\nTOTAL COURSES:",
+            len(courses)
+        )
+
         for course in courses:
 
-            course_text = course["text"]
+            try:
 
-            info = extract_syllabus_info(
-                file_path
-            )
+                course_text = course["text"]
 
-            predicted_rule = classify_course(
-                course["course_code"],
-                info
-            )
+                # -----------------------------------------
+                # Extract course info
+                # -----------------------------------------
 
-            if predicted_rule:
-
-                validation_results = (
-                    validate_syllabus(
-                        file_path,
-                        predicted_rule,info
+                info = (
+                    extract_syllabus_info_from_text(
+                        course_text
                     )
+                )
+
+                print(
+                    "\nPROCESSING:",
+                    info.get("course_code")
+                )
+
+                # -----------------------------------------
+                # Classification
+                # -----------------------------------------
+
+                predicted_rule = classify_course(
+
+                    course["course_code"],
+
+                    info
+                )
+
+                # -----------------------------------------
+                # Validation
+                # -----------------------------------------
+
+                if predicted_rule:
+
+                    validation_results = (
+                        validate_syllabus(
+
+                            course_text,
+
+                            predicted_rule,
+
+                            info
+                        )
+                    )
+
+                    all_results.append({
+
+                        "course_code":
+                        course["course_code"],
+
+                        "course_text":
+                        course_text,
+
+                        "predicted_rule":
+                        predicted_rule,
+
+                        "validation_results":
+                        validation_results,
+
+                        "status":
+                        "success"
+                    })
+
+                else:
+
+                    all_results.append({
+
+                        "course_code":
+                        course["course_code"],
+
+                        "course_text":
+                        course_text,
+
+                        "predicted_rule":
+                        "Unable to classify",
+
+                        "validation_results":
+                        [
+                            "✗ Classification failed"
+                        ],
+
+                        "status":
+                        "error"
+                    })
+
+            except Exception as e:
+
+                print(
+                    "\nFULL SYLLABUS ERROR:",
+                    str(e)
                 )
 
                 all_results.append({
 
                     "course_code":
-                    course["course_code"],
+                    course.get(
+                        "course_code",
+                        "UNKNOWN"
+                    ),
+
+                    "course_text":
+                    course.get(
+                        "text",
+                        ""
+                    ),
 
                     "predicted_rule":
-                    predicted_rule,
-
-                    "validation_results":
-                    validation_results,
-
-                    "status":
-                    "success"
-                })
-
-            else:
-
-                all_results.append({
-
-                    "course_code":
-                    course["course_code"],
-
-                    "predicted_rule":
-                    "Unable to classify",
+                    "Processing Error",
 
                     "validation_results":
                     [
-                        "✗ Classification failed"
+                        f"✗ {str(e)}"
                     ],
 
                     "status":

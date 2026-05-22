@@ -444,3 +444,124 @@ def extract_syllabus_info(file_path):
     print("================================\n")
 
     return info
+def extract_syllabus_info_from_text(text):
+
+    clean_text = " ".join(
+        text.split()
+    )
+
+    info = {}
+
+    # -------------------------------------------------
+    # COURSE CODE
+    # -------------------------------------------------
+
+    match = re.search(
+
+        r'Course\s*Code\s*([A-Z0-9]+)',
+
+        clean_text,
+
+        re.IGNORECASE
+    )
+
+    info["course_code"] = (
+        match.group(1)
+        if match else None
+    )
+
+    # -------------------------------------------------
+    # COURSE TITLE
+    # -------------------------------------------------
+
+    title_match = re.search(
+
+        r'Course\s*Code\s*[A-Z0-9]+.*?'
+        r'Course\s*Title\s*(.*?)'
+        r'Type\s*of\s*Course',
+
+        clean_text,
+
+        re.IGNORECASE
+    )
+
+    if title_match:
+
+        extracted_title = (
+            title_match.group(1)
+            .strip()
+        )
+
+        extracted_title = re.sub(
+            r'\s+',
+            ' ',
+            extracted_title
+        )
+
+        info["course_title"] = (
+            extracted_title
+        )
+
+    else:
+
+        info["course_title"] = None
+
+    # -------------------------------------------------
+    # TYPE OF COURSE
+    # -------------------------------------------------
+
+    match = re.search(
+
+        r'Type\s*of\s*Course\s*([A-Za-z ]+)',
+
+        clean_text,
+
+        re.IGNORECASE
+    )
+
+    info["type_of_course"] = (
+
+        match.group(1)
+        .strip()
+        .split()[0]
+        .upper()
+
+        if match else None
+    )
+
+    # -------------------------------------------------
+    # SECTIONS
+    # -------------------------------------------------
+
+    lower = clean_text.lower()
+
+    info["has_course_summary"] = (
+        "course summary" in lower
+    )
+
+    info["has_course_outcomes"] = (
+        "course outcomes" in lower
+    )
+
+    info["has_detailed_syllabus"] = (
+        "detailed syllabus" in lower
+        or "module" in lower
+    )
+
+    info["has_references"] = (
+        "reference" in lower
+    )
+
+    # -------------------------------------------------
+    # COURSE OUTCOMES
+    # -------------------------------------------------
+
+    cos = re.findall(
+        r'CO\s*[1-8]',
+        clean_text,
+        re.IGNORECASE
+    )
+
+    info["co_count"] = len(set(cos))
+
+    return info
